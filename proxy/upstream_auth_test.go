@@ -71,3 +71,27 @@ func TestManagedModelUpstreamAuthorization(t *testing.T) {
 		})
 	}
 }
+
+func TestManagedModelUpstreamRejectsWrongBackendKey(t *testing.T) {
+	t.Setenv("TEST_UPSTREAM_WRONG_KEY", "wrong-backend-key")
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer expected-backend-key" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer upstream.Close()
+
+	p := NewProcess("protected-model", 15, config.ModelConfig{
+		Proxy: upstream.URL, UpstreamAPIKeyEnv: "TEST_UPSTREAM_WRONG_KEY",
+	}, debugLogger, debugLogger)
+	p.state = StateReady
+	req := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader("{}"))
+	req.Header.Set("Authorization", "Bearer expected-backend-key") // client key must not leak
+	response := httptest.NewRecorder()
+	p.ProxyRequest(response, req)
+	if response.Code != http.StatusUnauthorized {
+		t.Fatalf("wrong configured upstream credential returned %d; want 401", response.Code)
+	}
+}

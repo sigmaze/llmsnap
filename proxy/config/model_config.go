@@ -3,8 +3,8 @@ package config
 import (
 	"errors"
 	"fmt"
-	"runtime"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -24,40 +24,13 @@ const (
 	SleepModeDisable SleepMode = SleepMode("disable")
 )
 
-var upstreamAPIKeyEnvName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*package config
-
-import (
-	"errors"
-	"fmt"
-	"runtime"
-	"regexp"
-	"strings"
-)
-
-// HTTPEndpoint represents a single HTTP endpoint configuration
-type HTTPEndpoint struct {
-	Endpoint string `yaml:"endpoint"` // URL path (e.g., "/wake_up")
-	Method   string `yaml:"method"`   // HTTP method (GET, POST, PUT, PATCH)
-	Body     string `yaml:"body"`     // Optional request body (JSON string)
-	Timeout  int    `yaml:"timeout"`  // Optional per-endpoint timeout (seconds)
-}
-
-// SleepMode represents the sleep/wake behavior mode
-type SleepMode string
-
-const (
-	SleepModeEnable  SleepMode = SleepMode("enable")
-	SleepModeDisable SleepMode = SleepMode("disable")
-)
-
-)
+var upstreamAPIKeyEnvName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 type ModelConfig struct {
 	Cmd           string   `yaml:"cmd"`
 	CmdStop       string   `yaml:"cmdStop"`
-	Proxy         string   `yaml:"proxy"`
-	// Name of an environment variable containing the backend-only HTTP API key.
-	// Never put the secret value in this configuration.
+	Proxy            string   `yaml:"proxy"`
+	// Only the environment variable name, never the backend secret itself.
 	UpstreamAPIKeyEnv string `yaml:"upstreamApiKeyEnv"`
 	Aliases       []string `yaml:"aliases"`
 	Env           []string `yaml:"env"`

@@ -30,7 +30,7 @@ test helper (including the Linux ARM64 helper used on GX10), then run focused
 and full Go tests:
 
 ```sh
-npm --prefix ui-svelte install --ignore-scripts
+npm --prefix ui-svelte ci --ignore-scripts
 npm --prefix ui-svelte run build
 make simple-responder
 go test ./proxy/... -run 'ManagedModelUpstream|UpstreamAPIKeyEnv|APIKeyAuth' -count=1

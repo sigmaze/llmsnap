@@ -29,7 +29,7 @@ var upstreamAPIKeyEnvName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 type ModelConfig struct {
 	Cmd           string   `yaml:"cmd"`
 	CmdStop       string   `yaml:"cmdStop"`
-	Proxy            string   `yaml:"proxy"`
+	Proxy         string   `yaml:"proxy"`
 	// Only the environment variable name, never the backend secret itself.
 	UpstreamAPIKeyEnv string `yaml:"upstreamApiKeyEnv"`
 	Aliases       []string `yaml:"aliases"`

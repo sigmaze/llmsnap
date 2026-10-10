@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -113,6 +114,22 @@ func NewProcess(ID string, healthCheckTimeout int, config config.ModelConfig, pr
 	var reverseProxy *httputil.ReverseProxy
 	if proxyURL != nil {
 		reverseProxy = httputil.NewSingleHostReverseProxy(proxyURL)
+		originalDirector := reverseProxy.Director
+		// Always strip client-facing credentials, even when the Process is used
+		// without the HTTP authentication middleware. Insert only this model's
+		// own backend key after the incoming credentials have been removed.
+		backendKey := ""
+		if config.UpstreamAPIKeyEnv != "" {
+			backendKey = os.Getenv(config.UpstreamAPIKeyEnv)
+		}
+		reverseProxy.Director = func(req *http.Request) {
+			originalDirector(req)
+			req.Header.Del("Authorization")
+			req.Header.Del("x-api-key")
+			if backendKey != "" {
+				req.Header.Set("Authorization", "Bearer "+backendKey)
+			}
+		}
 		reverseProxy.ModifyResponse = func(resp *http.Response) error {
 			// prevent nginx from buffering streaming responses (e.g., SSE)
 			if strings.Contains(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream") {

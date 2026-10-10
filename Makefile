@@ -24,15 +24,15 @@ proxy/ui_dist/placeholder.txt:
 	touch $@
 
 # use cached test results while developing
-test-dev: proxy/ui_dist/placeholder.txt
+test-dev: proxy/ui_dist/placeholder.txt simple-responder
 	go test -short ./proxy/...
 	staticcheck ./proxy/... || true
 
-test: proxy/ui_dist/placeholder.txt
+test: proxy/ui_dist/placeholder.txt simple-responder
 	go test -short -count=1 ./proxy/...
 
 # for CI - full test (takes longer)
-test-all: proxy/ui_dist/placeholder.txt
+test-all: proxy/ui_dist/placeholder.txt simple-responder
 	go test -race -count=1 ./proxy/...
 
 ui/node_modules:
@@ -59,10 +59,11 @@ windows: ui
 	GOOS=windows GOARCH=amd64 go build -ldflags="-X main.commit=${GIT_HASH} -X main.version=local_${GIT_HASH} -X main.date=${BUILD_DATE}" -o $(BUILD_DIR)/$(APP_NAME)-windows-amd64.exe
 
 # for testing proxy.Process
-simple-responder:
+simple-responder: $(BUILD_DIR)
 	@echo "Building simple responder"
 	GOOS=darwin GOARCH=arm64 go build -o $(BUILD_DIR)/simple-responder_darwin_arm64 cmd/simple-responder/simple-responder.go
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/simple-responder_linux_amd64 cmd/simple-responder/simple-responder.go
+	GOOS=linux GOARCH=arm64 go build -o $(BUILD_DIR)/simple-responder_linux_arm64 cmd/simple-responder/simple-responder.go
 
 simple-responder-windows:
 	@echo "Building simple responder for windows"

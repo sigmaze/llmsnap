@@ -265,6 +265,11 @@ func LoadConfigFromReader(r io.Reader) (Config, error) {
 	for _, modelId := range modelIds {
 		modelConfig := config.Models[modelId]
 
+		// Fail closed at startup: an explicitly configured backend credential must exist.
+		if name := modelConfig.UpstreamAPIKeyEnv; name != "" && os.Getenv(name) == "" {
+			return Config{}, fmt.Errorf("model %s: upstream API key environment variable %s is missing or empty", modelId, name)
+		}
+
 		// Strip comments from command fields
 		modelConfig.Cmd = StripComments(modelConfig.Cmd)
 		modelConfig.CmdStop = StripComments(modelConfig.CmdStop)

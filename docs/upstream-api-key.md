@@ -25,5 +25,14 @@ Health checks follow the existing LLMSnap behavior and do not inject API
 keys; use an unauthenticated readiness endpoint such as vLLM's `/health`.
 Do not use this feature to forward the inbound `API_KEY_1` credential.
 
-Run `go test ./proxy/... -run 'Upstream|APIKeyAuth' -count=1` and the
-full `go test ./...` suite when building or upgrading this fork.
+For reproducible tests from a fresh checkout, first build the embedded UI and
+test helper (including the Linux ARM64 helper used on GX10), then run focused
+and full Go tests:
+
+```sh
+npm --prefix ui-svelte install --ignore-scripts
+npm --prefix ui-svelte run build
+make simple-responder
+go test ./proxy/... -run 'ManagedModelUpstream|UpstreamAPIKeyEnv|APIKeyAuth' -count=1
+go test ./...
+```
